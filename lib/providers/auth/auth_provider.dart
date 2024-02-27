@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:instagram_clone/exceptions/custom_exception.dart';
-import 'package:instagram_clone/providers/auth_state.dart';
+import 'package:instagram_clone/providers/auth/auth_state.dart';
 import 'package:instagram_clone/repositories/auth_repository.dart';
 import 'package:state_notifier/state_notifier.dart';
 

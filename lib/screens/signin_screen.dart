@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram_clone/exceptions/custom_exception.dart';
-import 'package:instagram_clone/providers/auth_provider.dart';
-import 'package:instagram_clone/providers/auth_state.dart';
+import 'package:instagram_clone/providers/auth/auth_provider.dart';
+import 'package:instagram_clone/providers/auth/auth_state.dart';
 import 'package:instagram_clone/screens/signup_screen.dart';
 import 'package:instagram_clone/utils/logger.dart';
 import 'package:instagram_clone/widgets/error_dialog_widget.dart';

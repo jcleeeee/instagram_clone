@@ -8,7 +8,7 @@ import 'package:instagram_clone/screens/signin_screen.dart';
 import 'package:instagram_clone/widgets/error_dialog_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:validators/validators.dart';
-import 'package:instagram_clone/providers/auth_provider.dart' as myAuthProvider;
+import 'package:instagram_clone/providers/auth/auth_provider.dart' as myAuthProvider;
 
 import '../exceptions/custom_exception.dart';
 

@@ -5,13 +5,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_state_notifier/flutter_state_notifier.dart';
 import 'package:instagram_clone/firebase_options.dart';
-import 'package:instagram_clone/providers/auth_state.dart';
+import 'package:instagram_clone/providers/auth/auth_state.dart';
+import 'package:instagram_clone/providers/feed/feed_provider.dart';
+import 'package:instagram_clone/providers/feed/feed_provider.dart';
+import 'package:instagram_clone/providers/feed/feed_state.dart';
 import 'package:instagram_clone/repositories/auth_repository.dart';
+import 'package:instagram_clone/repositories/feed_repository.dart';
 import 'package:instagram_clone/screens/signin_screen.dart';
 import 'package:instagram_clone/screens/signup_screen.dart';
 import 'package:instagram_clone/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:instagram_clone/providers/auth_provider.dart' as myAuthProvider;
+import 'package:instagram_clone/providers/auth/auth_provider.dart' as myAuthProvider;
 
 
 
@@ -37,6 +41,12 @@ class MyApp extends StatelessWidget {
             firebaseFirestore: FirebaseFirestore.instance,
           ),
         ),
+        Provider<FeedRepository>(
+          create: (context) =>FeedRepository(
+              firebaseStorage: FirebaseStorage.instance,
+              firebaseFirestore: FirebaseFirestore.instance,
+          ),
+        ),
         StreamProvider<User?>(
           create: (context) => FirebaseAuth.instance.authStateChanges(),
           initialData: null,
@@ -44,7 +54,9 @@ class MyApp extends StatelessWidget {
         StateNotifierProvider<myAuthProvider.AuthProvider, AuthState>(
             create: (context) => myAuthProvider.AuthProvider(),
         ),
-
+        StateNotifierProvider<FeedProvider, FeedState>(
+            create: (context) => FeedProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

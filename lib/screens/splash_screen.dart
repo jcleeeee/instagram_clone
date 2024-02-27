@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_clone/providers/auth_state.dart';
+import 'package:instagram_clone/providers/auth/auth_state.dart';
 import 'package:instagram_clone/screens/main_screen.dart';
 import 'package:instagram_clone/screens/signin_screen.dart';
 import 'package:provider/provider.dart';

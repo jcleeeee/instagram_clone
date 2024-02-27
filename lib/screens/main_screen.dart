@@ -1,19 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_clone/providers/auth_provider.dart';
+import 'package:instagram_clone/providers/auth/auth_provider.dart';
+import 'package:instagram_clone/screens/feed_upload_screen.dart';
 import 'package:provider/provider.dart';
 
-class MainScreen extends StatelessWidget {
+import '../utils/logger.dart';
+
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+  late TabController tabController;
+
+  @override
+  void initState(){
+    super.initState();
+    tabController = TabController(length: 5, vsync: this);
+  }
+
+  void bottomNavigationItemOnTab(int index){
+    setState(() {
+      tabController.index = index;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            await context.read<AuthProvider>().signOut();
-          },
-          child: Text('로그아웃'),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: TabBarView(
+          controller: tabController,
+          physics: NeverScrollableScrollPhysics(),
+          children: [
+            FeedUploadScreen(),
+            Center(child: Text('2'),),
+            Center(child: Text('3'),),
+            Center(child: Text('4'),),
+            Center(child: Text('5'),),
+
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: tabController.index,
+          onTap: bottomNavigationItemOnTab,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'feed',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add_circle),
+              label: 'upload',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'favorite',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'profile',
+            ),
+          ],
         ),
       ),
     );
