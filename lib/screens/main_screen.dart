@@ -28,6 +28,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   }
 
   @override
+  void dispose(){
+    tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => false,
@@ -36,9 +42,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           controller: tabController,
           physics: NeverScrollableScrollPhysics(),
           children: [
-            FeedUploadScreen(),
+            Center(child: Text('1'),),
             Center(child: Text('2'),),
-            Center(child: Text('3'),),
+            FeedUploadScreen(
+              onFeedUpLoaded: () {
+                setState(() {
+                  tabController.index=0;
+                });
+              },
+            ),
             Center(child: Text('4'),),
             Center(child: Text('5'),),
 

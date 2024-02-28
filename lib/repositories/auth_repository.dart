@@ -86,7 +86,7 @@ class AuthRepository {
             'feedCount': 0,
             'likes': [],
             'followers': [],
-            'followings': [],
+            'following': [],
           }
       );
 

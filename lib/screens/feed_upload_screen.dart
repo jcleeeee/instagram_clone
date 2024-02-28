@@ -2,11 +2,18 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:instagram_clone/exceptions/custom_exception.dart';
 import 'package:instagram_clone/providers/feed/feed_provider.dart';
+import 'package:instagram_clone/providers/feed/feed_state.dart';
+import 'package:instagram_clone/widgets/error_dialog_widget.dart';
 import 'package:provider/provider.dart';
 
 class FeedUploadScreen extends StatefulWidget {
-  const FeedUploadScreen({super.key});
+  final VoidCallback onFeedUpLoaded;
+
+  const FeedUploadScreen({
+    super.key,
+    required this.onFeedUpLoaded});
 
   @override
   State<FeedUploadScreen> createState() => _FeedUploadScreenState();
@@ -25,6 +32,7 @@ class _FeedUploadScreenState extends State<FeedUploadScreen> {
   }
 
   List<Widget> selectedImageList() {
+    final feedStatus = context.watch<FeedState>().feedStatus;
     return _files.map((data){
       return Padding(
         padding: const EdgeInsets.only(left:10),
@@ -43,7 +51,7 @@ class _FeedUploadScreenState extends State<FeedUploadScreen> {
               top: 10,
               right: 10,
               child: InkWell(
-                onTap: (){
+                onTap: feedStatus ==FeedStatus.submitting ? null : (){
                   setState(() {
                     _files.remove(data);
                   });
@@ -77,6 +85,7 @@ class _FeedUploadScreenState extends State<FeedUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final feedStatus = context.watch<FeedState>().feedStatus;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -84,59 +93,83 @@ class _FeedUploadScreenState extends State<FeedUploadScreen> {
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
-              onPressed: (){
-                context.read<FeedProvider>().uploadFeed(
+              onPressed: (_files.length == 0 || feedStatus == FeedStatus.submitting) ? null : () async {
+                try{
+                  FocusScope.of(context).unfocus();
+
+                  await context.read<FeedProvider>().uploadFeed(
                     files: _files,
                     desc: _textEditingController.text,
-                    );
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    // 이부분 오류있음 >> await async 해야하는데 오류 때문에 그냥 납둠
+                    SnackBar(content: Text('Feed를 등록했습니다.')),
+                  );
+
+                  widget.onFeedUpLoaded();
+                } on CustomException catch (e) {
+                  errorDialogWidget(context, e);
+                }
+                
               },
-              child: Text('feed'),
+              child: Text('Feed'),
           ),
         ],
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 15,
-          horizontal: 15,
-        ),
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () async {
-                      final _images = await selectImages();
-                      setState(() {
-                        _files.addAll(_images);
-                      });
-                    },
-                    child: Container(
-                      height: 80,
-                      width: 80,
-                      child: const Icon(Icons.upload),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ),
-                  ...selectedImageList(),
-                ],
-              ),
-            ),
-            if(_files.isNotEmpty)
-              TextFormField(
-                controller: _textEditingController,
-                decoration: const InputDecoration(
-                  hintText: '내용을 입력하세요...',
-                  border: InputBorder.none,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: 15,
+            horizontal: 15,
+          ),
+          alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                LinearProgressIndicator(
+                  backgroundColor: Colors.transparent,
+                  value: feedStatus == FeedStatus.submitting ? null : 1,
+                  color: feedStatus == FeedStatus.submitting ? Colors.red : Colors.transparent,
                 ),
-                maxLines: 5,
-              ),
-          ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      InkWell(
+                        onTap: feedStatus == FeedStatus.submitting ? null : () async {
+                          final _images = await selectImages();
+                          setState(() {
+                            _files.addAll(_images);
+                          });
+                        },
+                        child: Container(
+                          height: 80,
+                          width: 80,
+                          child: const Icon(Icons.upload),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                      ),
+                      ...selectedImageList(),
+                    ],
+                  ),
+                ),
+                if(_files.isNotEmpty)
+                  TextFormField(
+                    controller: _textEditingController,
+                    decoration: const InputDecoration(
+                      hintText: '내용을 입력하세요...',
+                      border: InputBorder.none,
+                    ),
+                    maxLines: 5,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

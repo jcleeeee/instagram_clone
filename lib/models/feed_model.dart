@@ -1,4 +1,6 @@
 // feed_model.dart
+import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:instagram_clone/models/user_model.dart';
 

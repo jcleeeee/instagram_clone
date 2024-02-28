@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:instagram_clone/exceptions/custom_exception.dart';
 import 'package:instagram_clone/models/feed_model.dart';
 import 'package:instagram_clone/models/user_model.dart';
 import 'package:uuid/uuid.dart';
@@ -22,44 +23,71 @@ class FeedRepository {
     required String desc,
     required String uid,
   }) async {
-    // uuid 36글자 a+0 32 hypen 4
-    String feedId = Uuid().v1();
+    List<String> imageUrls = [];
 
-    // firestore 문서 참조
-    DocumentReference<Map<String, dynamic>> feedDocRef = firebaseFirestore
-        .collection('feeds').doc(feedId);
+    try {
+      WriteBatch batch = firebaseFirestore.batch();
 
-    DocumentReference<Map<String, dynamic>> userDocRef = firebaseFirestore
-        .collection('users').doc(uid);
+      String feedId = Uuid().v1();
 
-    // storage 참조
-    Reference ref = firebaseStorage.ref().child('feeds').child(feedId);
+      // firestore 문서 참조
+      DocumentReference<Map<String, dynamic>> feedDocRef
+      = firebaseFirestore.collection('feeds').doc(feedId);
 
-    List<String> imageUrls = await Future.wait(files.map((e) async {
-      String imageId = Uuid().v1();
-      TaskSnapshot taskSnapshot = await ref.child(imageId).putFile(File(e));
-      return await taskSnapshot.ref.getDownloadURL();
-    }).toList());
+      DocumentReference<Map<String, dynamic>> userDocRef
+      = firebaseFirestore.collection('users').doc(uid);
 
-    DocumentSnapshot<Map<String, dynamic>> userSnapshot = await userDocRef.get();
-    UserModel userModel =UserModel.fromMap(userSnapshot.data()!);
+      // storage 참조
+      Reference ref = firebaseStorage.ref().child('feeds').child(feedId);
 
-    FeedModel feedModel = FeedModel.fromMap({
-      'uid': uid,
-      'feedId': feedId,
-      'desc': desc,
-      'imageUrls': imageUrls,
-      'likes': [],
-      'likeCount': 0,
-      'commentCount': 0,
-      'createAt': Timestamp.now(),
-      'writer': userModel,
-    });
+      imageUrls = await Future.wait(files.map((e) async {
+        String imageId = Uuid().v1();
+        TaskSnapshot taskSnapshot = await ref.child(imageId).putFile(File(e));
+        return await taskSnapshot.ref.getDownloadURL();
+      }).toList());
 
-    await feedDocRef.set(feedModel.toMap(userDocRef: userDocRef));
+      DocumentSnapshot<Map<String, dynamic>> userSnapshot = await userDocRef.get();
+      UserModel userModel = UserModel.fromMap(userSnapshot.data()!);
 
-    await userDocRef.update({
-      'feedCount' : FieldValue.increment(1),
+      FeedModel feedModel = FeedModel.fromMap({
+        'uid' : uid,
+        'feedId' : feedId,
+        'desc' : desc,
+        'imageUrls' : imageUrls,
+        'likes' : [],
+        'likeCount' : 0,
+        'commentCount' : 0,
+        'createAt' : Timestamp.now(),
+        'writer' : userModel,
+      });
+
+      batch.set(feedDocRef, feedModel.toMap(userDocRef: userDocRef));
+
+      batch.update(userDocRef, {
+        'feedCount': FieldValue.increment(1),
+      });
+
+      batch.commit();
+
+    } on FirebaseException catch (e) {
+      _deleteImage(imageUrls);
+      throw CustomException(
+        code: e.code,
+        message: e.message!,
+      );
+    } catch (e) {
+      _deleteImage(imageUrls);
+      throw CustomException(
+        code: 'Exception',
+        message: e.toString(),
+      );
+    }
+
+
+  }
+  void _deleteImage(List<String> imageUrls){
+    imageUrls.forEach((element) async {
+      await firebaseStorage.refFromURL(element).delete();
     });
   }
 }
