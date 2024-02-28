@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/providers/auth/auth_provider.dart';
+import 'package:instagram_clone/screens/feed_screen.dart';
 import 'package:instagram_clone/screens/feed_upload_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -42,8 +43,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           controller: tabController,
           physics: NeverScrollableScrollPhysics(),
           children: [
-            Center(child: Text('1'),),
-            Center(child: Text('2'),),
+            FeedScreen(),
             FeedUploadScreen(
               onFeedUpLoaded: () {
                 setState(() {
@@ -51,6 +51,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 });
               },
             ),
+            Center(child: Text('2'),),
             Center(child: Text('4'),),
             Center(child: Text('5'),),
 

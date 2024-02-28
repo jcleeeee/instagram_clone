@@ -93,11 +93,11 @@ class _FeedUploadScreenState extends State<FeedUploadScreen> {
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
-              onPressed: (_files.length == 0 || feedStatus == FeedStatus.submitting) ? null : () async {
+              onPressed: (_files.length == 0 || feedStatus == FeedStatus.submitting) ? null : () {
                 try{
                   FocusScope.of(context).unfocus();
 
-                  await context.read<FeedProvider>().uploadFeed(
+                  context.read<FeedProvider>().uploadFeed(
                     files: _files,
                     desc: _textEditingController.text,
                   );
